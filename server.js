@@ -9,6 +9,8 @@ import corsOptions from './common/corsOption.js';
 import cookieParser from 'cookie-parser';
 import userRouter from './routes/userRoutes.js';
 import productRouter from './routes/productRoutes.js';
+import cartRouter from './routes/cartRouter.js';
+import addressRouter from './routes/addressRouter.js';
 
 const port = process.env.PORT || 3500;
 
@@ -30,6 +32,8 @@ app.get("/", (req, res) => {
 });
 app.use('/api/users', userRouter)
 app.use('/api/products', productRouter)
+app.use('/api/cart', cartRouter)
+app.use('/api/address', addressRouter)
 
 
 
