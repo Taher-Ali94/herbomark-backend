@@ -7,7 +7,8 @@ import { refresh } from "../controllers/user.js";
 import { logout } from "../controllers/user.js";
 
 const userRouter = Router();
-userRouter.get("/all-customers", verifyJwt, getAllCustomers);
+// GET /api/users/customers (admin only)
+userRouter.get("/customers", verifyJwt, getAllCustomers);
 userRouter.post("/register", register);
 userRouter.post("/login", login);
 userRouter.get("/refresh", refresh);

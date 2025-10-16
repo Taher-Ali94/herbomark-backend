@@ -3,10 +3,12 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import "dotenv/config";
 import { connectDB } from './database/connectDB.js';
-import { logger } from './middleware/logger.js';
+import { logger, logEvents } from './middleware/logger.js';
 import errorHandler from './middleware/errorHandler.js';
 import corsOptions from './common/corsOption.js';
 import cookieParser from 'cookie-parser';
+import userRouter from './routes/userRoutes.js';
+import productRouter from './routes/productRoutes.js';
 
 const port = process.env.PORT || 3500;
 
@@ -26,7 +28,8 @@ app.get("/", (req, res) => {
         message: "The server is active",
     });
 });
-
+app.use('/api/users', userRouter)
+app.use('/api/products', productRouter)
 
 
 

@@ -1,5 +1,5 @@
 import expressAsyncHandler from "express-async-handler";
-import { User } from "../database/models/User";
+import { User } from "../database/models/User.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -37,7 +37,7 @@ const login = expressAsyncHandler(async (req, res) => {
     res.cookie('jwt', refreshToken, {
         httpOnly: true, // Accessible only by web server
         secure: true,
-        sameSite: 'none', // CSRF protection
+        sameSite: 'none',
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     });
 
@@ -142,7 +142,8 @@ const getAllCustomers = expressAsyncHandler(async (req, res) => {
             }
 
             const roles = decoded?.UserInfo?.roles || [];
-            const isAdmin = Array.isArray(roles) && roles.includes('Admin');
+            const rolesLower = Array.isArray(roles) ? roles.map(r => String(r).toLowerCase()) : [String(roles).toLowerCase()];
+            const isAdmin = rolesLower.includes('admin');
             if (!isAdmin) {
                 return res.status(403).json({ message: 'Forbidden' });
             }
