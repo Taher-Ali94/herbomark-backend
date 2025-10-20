@@ -11,6 +11,7 @@ import userRouter from './routes/userRoutes.js';
 import productRouter from './routes/productRoutes.js';
 import cartRouter from './routes/cartRouter.js';
 import addressRouter from './routes/addressRouter.js';
+import paymentRouter from './routes/paymentRouter.js';
 
 const port = process.env.PORT || 3500;
 
@@ -34,6 +35,7 @@ app.use('/api/users', userRouter)
 app.use('/api/products', productRouter)
 app.use('/api/cart', cartRouter)
 app.use('/api/address', addressRouter)
+app.use('/api/payments', paymentRouter)
 
 
 

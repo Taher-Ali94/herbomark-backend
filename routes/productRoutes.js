@@ -4,23 +4,22 @@ import verifyJwt from '../middleware/verifyJWT.js';
 import verifyAdmin from '../middleware/verifyAdmin.js';
 
 const productRouter = Router();
-productRouter.use(verifyJwt);
-productRouter.use(verifyAdmin);
+
 
 // POST /api/products
-productRouter.post('/', addProduct);
+productRouter.post('/', verifyJwt, verifyAdmin, addProduct);
 
 // GET /api/products
-productRouter.get('/', getProducts);
+productRouter.get('/',getProducts);
 
 // GET /api/products/:id
 productRouter.get('/:id', getProductById);
 
 // PUT /api/products/:id
-productRouter.put('/:id', updateProductById);
+productRouter.put('/:id', verifyJwt, verifyAdmin, updateProductById);
 
 // DELETE /api/products/:id
-productRouter.delete('/:id', deleteProductById);
+productRouter.delete('/:id', verifyJwt, verifyAdmin, deleteProductById);
 
 
 export default productRouter;
