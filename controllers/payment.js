@@ -95,3 +95,38 @@ export const allOrders = async (req, res) => {
         return res.status(500).json({ message: "Failed to fetch orders", error: error?.message || String(error) });
     }
 }
+
+// Public endpoint to fetch Razorpay public key for client initialization
+export const getKey = async (req, res) => {
+    try {
+        return res.status(200).json({ key: process.env.RAZORPAY_KEY_ID || '' });
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to fetch key' });
+    }
+};
+
+// Create a COD order record without Razorpay payment (so it appears in Orders)
+export const cod = async (req, res) => {
+    try {
+        const { amount, orderItems, userShipping } = req.body || {};
+        if (!amount || typeof amount !== 'number' || amount <= 0) {
+            return res.status(400).json({ message: 'Valid amount is required' });
+        }
+        if (!Array.isArray(orderItems) || orderItems.length === 0) {
+            return res.status(400).json({ message: 'orderItems must be a non-empty array' });
+        }
+
+        const orderId = `cod_${Date.now()}`;
+        const record = await Payment.create({
+            orderId,
+            amount,
+            orderItems,
+            userId: req.user,
+            userShipping,
+            payStatus: 'cod',
+        });
+        return res.status(201).json({ message: 'COD order created', success: true, order: record });
+    } catch (error) {
+        return res.status(500).json({ message: 'Failed to create COD order', error: error?.message || String(error) });
+    }
+};

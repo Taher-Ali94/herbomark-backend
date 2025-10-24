@@ -1,3 +1,29 @@
+## Backend (Express API)
+
+Scripts:
+- `npm run dev` — start with nodemon (development)
+- `npm start` — start with node (production)
+
+Default port: `3500` (or `PORT` from `.env`).
+
+Quick start:
+```bash
+npm install
+npm run dev
+```
+
+Health check:
+- GET `http://localhost:3500/` → `{ message: "The server is active" }`
+
+API base: `http://localhost:3500/api`
+
+Key routes:
+- Users: `/api/users/register`, `/api/users/login`, `/api/users/refresh`, `/api/users/logout`, `/api/users/customers`
+- Products: `/api/products`, `/api/products/:id`
+- Payments: `/api/payments/*`
+
+Environment:
+- Keep `.env` variable names as-is (e.g., `MONGO_URL`, `ACCESS_TOKEN_SECRET`).
 ## Backend Herbo - Express API
 
 A Node.js (ESM) backend using Express, MongoDB (Mongoose), JWT auth with access and refresh tokens, centralized error handling, structured file logging, and CORS.
@@ -31,6 +57,9 @@ PORT=3500
 MONGO_URL=mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority
 ACCESS_TOKEN_SECRET=<32-byte-hex>
 REFRESH_TOKEN_SECRET=<32-byte-hex>
+# Optional: for local HTTP dev, set cookies to non-secure
+# In production leave this unset or set to true
+COOKIE_SECURE=false
 ```
 
 Generate secrets:

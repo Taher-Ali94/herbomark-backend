@@ -31,7 +31,7 @@ const paymentSchema = new Schema(
         signature: { type: String },
         amount: { type: Number, required: true, min: 1 },
         orderItems: { type: [paymentItemSchema], default: [] },
-        userId: { type: Schema.Types.Mixed, required: true, index: true },
+        userId: { type: String, required: true, index: true },
         userShipping: { type: addressSchema },
         orderDate: { type: Date, default: Date.now, required: true },
         payStatus: { type: String, enum: ["created", "paid", "failed", "refunded"], required: true },

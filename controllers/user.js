@@ -3,23 +3,27 @@ import { User } from "../database/models/User.js";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
+const isProd = process.env.NODE_ENV === 'production';
+const COOKIE_SECURE = (process.env.COOKIE_SECURE ?? '').toLowerCase() === 'true' || isProd;
+const COOKIE_SAME_SITE = COOKIE_SECURE ? 'none' : 'lax';
+
 
 
 const login = expressAsyncHandler(async (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
-        res.status(400).json({ message: "Username and password are required." });
+        return res.status(400).json({ message: "Username and password are required." });
     }
 
     const foundUser = await User.findOne({ username });
     if (!foundUser || !foundUser.active) {
-        res.status(401).json({ message: "Not authorised" });
+        return res.status(401).json({ message: "Not authorised" });
     }
 
     const match = await bcrypt.compare(password, foundUser.password);
     if (!match) {
-        res.status(401).json({ message: "Not authorised" });
+        return res.status(401).json({ message: "Not authorised" });
     }
 
     const accessToken = jwt.sign(
@@ -35,19 +39,19 @@ const login = expressAsyncHandler(async (req, res) => {
     );
 
     res.cookie('jwt', refreshToken, {
-        httpOnly: true, // Accessible only by web server
-        secure: true,
-        sameSite: 'none',
-        maxAge: 24 * 60 * 60 * 1000 // 1 day
+        httpOnly: true,
+        secure: COOKIE_SECURE,
+        sameSite: COOKIE_SAME_SITE,
+        maxAge: 24 * 60 * 60 * 1000
     });
 
-    res.status(200).json({ accessToken, roles: foundUser.roles, message: "Logged in successfully." });
+    return res.status(200).json({ accessToken, roles: foundUser.roles, message: "Logged in successfully." });
 })
 
 const refresh = expressAsyncHandler(async (req, res) => {
     const cookies = req.cookies;
     if (!cookies?.jwt) {
-        res.status(401).json({ message: "Unauthorized" });
+        return res.status(401).json({ message: "Unauthorized" });
     }
 
     const refreshToken = cookies.jwt;
@@ -57,13 +61,13 @@ const refresh = expressAsyncHandler(async (req, res) => {
         process.env.REFRESH_TOKEN_SECRET,
         async (err, decoded) => {
             if (err) {
-                res.status(403).json({ message: "Forbidden" })
+                return res.status(403).json({ message: "Forbidden" })
             }
 
             const foundUser = await User.findOne({ username: decoded.username }).exec();
 
             if (!foundUser) {
-                res.status(401).json({ message: "Unauthorized" });
+                return res.status(401).json({ message: "Unauthorized" });
             }
 
             const accessToken = jwt.sign(
@@ -71,7 +75,7 @@ const refresh = expressAsyncHandler(async (req, res) => {
                 process.env.ACCESS_TOKEN_SECRET,
                 { expiresIn: "1m" }
             );
-            res.status(200).json({ accessToken });
+            return res.status(200).json({ accessToken });
         }
     );
 
@@ -82,29 +86,25 @@ const logout = (req, res) => {
     if (!cookies?.jwt) {
         res.sendStatus(204);
     }//No content
-    res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true })
+    res.clearCookie('jwt', { httpOnly: true, sameSite: COOKIE_SAME_SITE, secure: COOKIE_SECURE })
     res.json({ message: 'Cookie cleared' })
 }
 
 const register = expressAsyncHandler(async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
-        res.status(400).json({ message: "Username and password are required." });
+        return res.status(400).json({ message: "Username and password are required." });
     }
-    const user = await User.findOne({ username });
-    if (user) {
-        res.status(400).json({ message: "User already exists." });
+    const existing = await User.findOne({ username });
+    if (existing) {
+        return res.status(400).json({ message: "User already exists." });
     }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ username, password: hashedPassword });
-    res.status(201).json({ message: "User created successfully." });
-    newUser.roles = ["Customer"];
-    await newUser.save();
+    const newUser = await User.create({ username, password: hashedPassword, roles: ["Customer"] });
 
     const accessToken = jwt.sign(
-        {
-            UserInfo: { username: newUser.username, roles: newUser.roles }
-        },
+        { UserInfo: { username: newUser.username, roles: newUser.roles } },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: '1m' }
     );
@@ -117,12 +117,12 @@ const register = expressAsyncHandler(async (req, res) => {
 
     res.cookie('jwt', refreshToken, {
         httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        secure: COOKIE_SECURE,
+        sameSite: COOKIE_SAME_SITE,
         maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    res.status(201).json({ accessToken, roles: newUser.roles, message: "User created successfully." });
+    return res.status(201).json({ accessToken, roles: newUser.roles, message: "User created successfully." });
 })
 
 const getAllCustomers = expressAsyncHandler(async (req, res) => {
