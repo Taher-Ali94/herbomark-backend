@@ -7,9 +7,12 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+
+
 export const checkout = async (req, res) => {
     try {
         const { amount, cartItems, userShipping } = req.body;
+
 
         if (!amount || typeof amount !== "number" || amount <= 0) {
             return res.status(400).json({ message: "Valid amount is required" });
@@ -19,12 +22,14 @@ export const checkout = async (req, res) => {
         }
         // amount should be in the smallest currency unit (paise for INR)
         const options = {
-            amount,
+            amount:amount * 100,
             currency: "INR",
             receipt: `receipt_${Date.now()}`,
+            notes:[]
         };
 
         const order = await razorpay.orders.create(options);
+
 
         return res.status(200).json({
             orderId: order.id,
@@ -62,7 +67,7 @@ export const verify = async (req, res) => {
             orderId,
             paymentId,
             signature,
-            amount,
+            amount:amount * 100,
             orderItems,
             userId: req.user,
             userShipping,
